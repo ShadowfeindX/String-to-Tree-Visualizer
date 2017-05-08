@@ -2,28 +2,7 @@
 
 int cols;
 Canvas * canvas = nullptr;
-QPainter *right = new QPainter, *left = new QPainter;
-
-int index(int x, int y) {
-  if (x < 0 || y < 0 || x >= cols || y >= cols)
-    return -1;
-  return x + y * cols;
-}
-
-float map(float value,
-          float istart,
-          float istop,
-          float ostart,
-          float ostop) {
-  return ostart + (ostop - ostart) * ((value - istart) / (istop - istart));
-}
-
-template <typename T>
-void constrain(T & value,
-               T min,
-               T max) {
-  value = value < min ? min : value > max ? max : value;
-}
+QPainter *_right = new QPainter, *_left = new QPainter;
 
 QString str;
 QPointF begin(0,0), end(0, 100);
@@ -34,10 +13,28 @@ enum Active {
 } status;
 
 QDialog * menu;
+QMap<QString,QString> rules {
+  {"A", "BWRW"},
+  {"E", "CHSX"},
+  {"I", "DJNY"},
+  {"O", "FKPT"},
+  {"U", "GLQV"}
+};
+
+QString & convert(QString s) {
+  s = s.toUpper();
+  s.remove(" ");
+  foreach (QString key, rules.keys()) {
+    foreach (QString val, rules.value(key)) {
+      s.replace(val,key);
+    }
+  } return s;
+}
 
 void generate() {
   str = str.replace("A","AAEOEAIAIAUIOIAEAEAU");
   end.ry() *= .5;
+  qDebug() << str;
 }
 void reset() {
   str = "A";
@@ -49,7 +46,6 @@ void setup()
   canvas->setFixedSize(400,400);
   str = "A";
   status = Both;
-  menu = new QDialog(canvas);
   menu->setLayout(new QHBoxLayout);
   QPushButton * button = new QPushButton("Reset");
   QGroupBox * box = new QGroupBox("Style");
@@ -67,11 +63,11 @@ void setup()
   QLineEdit * line = new QLineEdit(str);
   QObject::connect(line, &QLineEdit::textChanged, [](const QString & s){
     reset();
-    str = s;
+    str = convert(s);
   });
   QObject::connect(button, &QPushButton::clicked, [line]{
     reset();
-    str = line->text();
+    str = convert(line->text());
   });
   menu->layout()->addWidget(line);
   menu->layout()->addWidget(button);
@@ -82,57 +78,62 @@ void setup()
 void draw()
 {
   Qt::GlobalColor color = Qt::darkGreen;
-
-  if (status == Right || status == Both) {
-  right->begin(canvas);
-  right->translate(canvas->width()/2, canvas->height());
-  for (int i = 0; i < str.length(); ++i) {
-    switch(str.at(i).unicode()) {
-      case 'A': {
-          right->setPen(color = color == Qt::darkGreen ? Qt::darkYellow : Qt::darkGreen);
-          right->drawLine(begin, begin-end);
-          right->translate(begin-end);
-        } break;
-      case 'E': {
-          right->rotate(qRadiansToDegrees(M_PI/6));
-        } break;
-      case 'I': {
-          right->rotate(qRadiansToDegrees(-M_PI/6));
-        } break;
-      case 'O': {
-          right->save();
-        } break;
-      case 'U': {
-          right->restore();
-        } break;
+  if (str.count("O") != str.count("U")) {
+    _right->begin(canvas);
+    _right->setFont(QFont("Arial", 40, 5));
+    _right->drawText(40, canvas->height()/2, "Invalid String!");
+    _right->end();
+    return;
+  } if (status == Right || status == Both) {
+    _right->begin(canvas);
+    _right->translate(canvas->width()/2, canvas->height());
+    for (int i = 0; i < str.length(); ++i) {
+      switch(str.at(i).unicode()) {
+        case 'A': {
+            _right->setPen(color = color == Qt::darkGreen ? Qt::darkYellow : Qt::darkGreen);
+            _right->drawLine(begin, begin-end);
+            _right->translate(begin-end);
+          } break;
+        case 'E': {
+            _right->rotate(qRadiansToDegrees(M_PI/6));
+          } break;
+        case 'I': {
+            _right->rotate(qRadiansToDegrees(-M_PI/6));
+          } break;
+        case 'O': {
+            _right->save();
+          } break;
+        case 'U': {
+            _right->restore();
+          } break;
+      }
     }
-  }
-  right->end();
+    _right->end();
   } if (status == Left || status == Both) {
-  left->begin(canvas);
-  left->translate(canvas->width()/2, canvas->height());
-  for (int i = 0; i < str.length(); ++i) {
-    switch(str.at(i).unicode()) {
-      case 'A': {
-          left->setPen(color = color == Qt::darkGreen ? Qt::darkYellow : Qt::darkGreen);
-          left->drawLine(begin, begin-end);
-          left->translate(begin-end);
-        } break;
-      case 'E': {
-          left->rotate(qRadiansToDegrees(-M_PI/6));
-        } break;
-      case 'I': {
-          left->rotate(qRadiansToDegrees(M_PI/6));
-        } break;
-      case 'O': {
-          left->save();
-        } break;
-      case 'U': {
-          left->restore();
-        } break;
+    _left->begin(canvas);
+    _left->translate(canvas->width()/2, canvas->height());
+    for (int i = 0; i < str.length(); ++i) {
+      switch(str.at(i).unicode()) {
+        case 'A': {
+            _left->setPen(color = color == Qt::darkGreen ? Qt::darkYellow : Qt::darkGreen);
+            _left->drawLine(begin, begin-end);
+            _left->translate(begin-end);
+          } break;
+        case 'E': {
+            _left->rotate(qRadiansToDegrees(-M_PI/6));
+          } break;
+        case 'I': {
+            _left->rotate(qRadiansToDegrees(M_PI/6));
+          } break;
+        case 'O': {
+            _left->save();
+          } break;
+        case 'U': {
+            _left->restore();
+          } break;
+      }
     }
-  }
-  left->end();
+    _left->end();
   }
 }
 
@@ -140,9 +141,10 @@ Canvas::Canvas(QWidget *parent)
   : QWidget(parent)
 {
   canvas = this;
+  menu = new QDialog(this);
   this->show();
   setup();
-  startTimer(16.67); // Framerate (30fps,33.33ms) / (60fps,16.67ms)
+  startTimer(250); // Framerate (30fps,33.33ms) / (60fps,16.67ms)
 }
 
 void Canvas::mousePressEvent(QMouseEvent *)

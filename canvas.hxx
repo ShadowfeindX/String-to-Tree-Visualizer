@@ -10,6 +10,7 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QLineEdit>
+#include <QDebug>
 #include <QtMath>
 
 class Canvas : public QWidget
