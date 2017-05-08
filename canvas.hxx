@@ -10,7 +10,6 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QLineEdit>
-//#include <QDebug>
 #include <QtMath>
 
 class Canvas : public QWidget
@@ -22,7 +21,6 @@ public:
 
 public slots:
     void mousePressEvent(QMouseEvent *);
-    void timerEvent(QTimerEvent *);
     void paintEvent(QPaintEvent *);
 };
 

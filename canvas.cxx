@@ -34,10 +34,18 @@ QString convert(QString s) {
 void generate() {
   str = str.replace("A","AAEOEAIAIAUIOIAEAEAU");
   end.ry() *= .5;
+  canvas->update();
 }
 void reset() {
   str = "A";
   end.ry() = canvas->height()/4;
+  canvas->update();
+}
+
+void setStatus(Active s)
+{
+  status = s;
+  canvas->update();
 }
 
 void setup()
@@ -52,14 +60,14 @@ void setup()
   QGroupBox * box = new QGroupBox("Style");
   box->setLayout(new QHBoxLayout);
   auto * radio = new QRadioButton("Left");
-  canvas->connect(radio, &QRadioButton::pressed, []{status = Left;});
+  canvas->connect(radio, &QRadioButton::pressed, []{setStatus(Left);});
   box->layout()->addWidget(radio);
   radio = new QRadioButton("Right");
-  canvas->connect(radio, &QRadioButton::pressed, []{status = Right;});
+  canvas->connect(radio, &QRadioButton::pressed, []{setStatus(Right);});
   box->layout()->addWidget(radio);
   radio = new QRadioButton("Both");
   radio->setChecked(true);
-  canvas->connect(radio, &QRadioButton::pressed, []{status = Both;});
+  canvas->connect(radio, &QRadioButton::pressed, []{setStatus(Both);});
   box->layout()->addWidget(radio);
   QLineEdit * line = new QLineEdit(str);
   QObject::connect(line, &QLineEdit::textChanged, [](const QString & s){
@@ -145,7 +153,6 @@ Canvas::Canvas(QWidget *parent)
   menu = new QDialog(this);
   this->show();
   setup();
-  startTimer(250); // Framerate (30fps,33.33ms) / (60fps,16.67ms)
 }
 
 void Canvas::mousePressEvent(QMouseEvent *)
@@ -153,6 +160,3 @@ void Canvas::mousePressEvent(QMouseEvent *)
 
 void Canvas::paintEvent(QPaintEvent *)
 { draw(); }
-
-void Canvas::timerEvent(QTimerEvent *)
-{ update(); }
