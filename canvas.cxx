@@ -21,7 +21,7 @@ QMap<QString,QString> rules {
   {"U", "GLQV"}
 };
 
-QString & convert(QString s) {
+QString convert(QString s) {
   s = s.toUpper();
   s.remove(" ");
   foreach (QString key, rules.keys()) {
@@ -34,7 +34,6 @@ QString & convert(QString s) {
 void generate() {
   str = str.replace("A","AAEOEAIAIAUIOIAEAEAU");
   end.ry() *= .5;
-  qDebug() << str;
 }
 void reset() {
   str = "A";
@@ -64,6 +63,7 @@ void setup()
   QObject::connect(line, &QLineEdit::textChanged, [](const QString & s){
     reset();
     str = convert(s);
+    qDebug() << str << s;
   });
   QObject::connect(button, &QPushButton::clicked, [line]{
     reset();
@@ -78,7 +78,7 @@ void setup()
 void draw()
 {
   Qt::GlobalColor color = Qt::darkGreen;
-  if (str.count("O") != str.count("U")) {
+  if (str.count('O') != str.count('U')) {
     _right->begin(canvas);
     _right->setFont(QFont("Arial", 40, 5));
     _right->drawText(40, canvas->height()/2, "Invalid String!");
